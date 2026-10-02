@@ -32,6 +32,20 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Desktop build folders (usually not needed unless you customize native code)
+/windows/
+/linux/
+/macos/
 
 # Symbolication related
 app.*.symbols
