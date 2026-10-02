@@ -1,0 +1,5 @@
+windows/** linguist-generated=true
+linux/** linguist-generated=true
+macos/** linguist-generated=true
+*.cmake linguist-generated=true
+CMakeLists.txt linguist-generated=true
