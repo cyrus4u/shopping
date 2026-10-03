@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/splash_cubit.dart';
+import 'package:shopping/features/feature_intro/presentation/screens/intro_screen.dart';
 import 'package:shopping/features/feature_intro/presentation/screens/splash_screen.dart';
 
 void main() {
@@ -18,6 +19,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        IntroScreen.routeName: (context)=> IntroScreen()
+      },
       debugShowCheckedModeBanner: false,
       title: 'Besinior Shop',
       home: const SplashScreen(),
