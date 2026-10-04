@@ -5,7 +5,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shopping/common/utils/custom_snackbar.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/connection_status.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/splash_cubit.dart';
-import 'package:shopping/features/feature_intro/presentation/screens/intro_screen.dart';
+import 'package:shopping/features/feature_intro/presentation/screens/intro_main_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -107,6 +107,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return; // the widget is still in the tree, so context is safe
 
     CustomSnackbar.showSnack(context, 'شما وارد شدید', Colors.green);
-    Navigator.pushNamed(context, IntroScreen.routeName, arguments: 'Besinior');
+    Navigator.pushNamed(
+      context,
+      IntroMainWrapper.routeName,
+      //  arguments: 'Besinior'
+    );
   }
 }
