@@ -107,8 +107,6 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return; // the widget is still in the tree, so context is safe
 
     CustomSnackbar.showSnack(context, 'شما وارد شدید', Colors.green);
-    Navigator.pushNamed(context, IntroScreen.routeName,
-    //  arguments: 'Besinior'
-     );
+    Navigator.pushNamed(context, IntroScreen.routeName, arguments: 'Besinior');
   }
 }

@@ -6,11 +6,11 @@ class IntroScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final args = ModalRoute.of(context)!.settings.arguments as String;
+    final args = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
-        title: Text('args'),
+        backgroundColor: Colors.blue,
+        title: Text(args),
         centerTitle: true,
       ),
       body: Container(),
