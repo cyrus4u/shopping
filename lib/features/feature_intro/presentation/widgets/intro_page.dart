@@ -5,15 +5,13 @@ import 'package:shimmer/shimmer.dart';
 class IntroPage extends StatelessWidget {
   final String title;
   final String description;
-  // final String image;
+  final String image;
   const IntroPage({
     Key? key,
     required this.title,
     required this.description,
-    // required this.image,
+    required this.image,
   }) : super(key: key);
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +25,17 @@ class IntroPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         /// image
-        // SizedBox(
-        //     width: width,
-        //     height: height * 0.6,
-        //     child: DelayedWidget(
-        //         delayDuration: const Duration(milliseconds: 200),// Not required
-        //         animationDuration: const Duration(seconds: 1),// Not required
-        //         animation: DelayedAnimations.SLIDE_FROM_BOTTOM,//
-        //         child: Image.asset(image))
-        // ),
-        // const SizedBox(height: 20,),
+        SizedBox(
+          width: width,
+          height: height * 0.6,
+          child: DelayedWidget(
+            delayDuration: const Duration(milliseconds: 200), // Not required
+            animationDuration: const Duration(seconds: 1), // Not required
+            animation: DelayedAnimations.SLIDE_FROM_BOTTOM, //
+            child: Image.asset(image),
+          ),
+        ),
+        const SizedBox(height: 20),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 25.0),
           child: DelayedWidget(

@@ -6,6 +6,7 @@ import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/s
 import 'package:shopping/features/feature_intro/presentation/screens/intro_main_wrapper.dart';
 import 'package:shopping/features/feature_intro/presentation/screens/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shopping/test_screen.dart';
 
 class AppScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -47,7 +48,10 @@ class MyApp extends StatelessWidget {
         Locale('en', ''), // English
         Locale('fa', ''), // Farsi
       ],
-      routes: {IntroMainWrapper.routeName: (context) => IntroMainWrapper()},
+      routes: {
+        IntroMainWrapper.routeName: (context) => IntroMainWrapper(),
+        TestScreen.routeName: (context) => TestScreen(),
+      },
       debugShowCheckedModeBanner: false,
       title: 'Besinior Shop',
       home: const SplashScreen(),

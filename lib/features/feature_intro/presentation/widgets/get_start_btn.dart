@@ -54,7 +54,7 @@ class _GetStartBtnState extends State<GetStartBtn> with TickerProviderStateMixin
           onPressed: (){
             widget.onTap();
           },
-          child: Text(widget.text, style: const TextStyle(fontSize: 17,color: Colors.black,fontWeight: FontWeight.w500, fontFamily: 'Vazir'),),),
+          child: Text(widget.text, style: const TextStyle(fontSize: 16,color: Colors.black,fontWeight: FontWeight.w500, fontFamily: 'Vazir'),),),
       ),
     );
   }
