@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shopping/common/widgets/bottom_nav.dart';
 
 class TestScreen extends StatelessWidget {
   static const routeName = '/test_screen';
-  const TestScreen({super.key});
+   TestScreen({super.key});
+
+  PageController pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(backgroundColor: Colors.blue));
+    return Scaffold(
+      appBar: AppBar(backgroundColor: Colors.blue),
+      bottomNavigationBar: BottomNav(),
+    );
   }
 }

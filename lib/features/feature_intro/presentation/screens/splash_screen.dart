@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shopping/common/utils/custom_snackbar.dart';
+import 'package:shopping/common/utils/prefs_operator.dart';
+import 'package:shopping/common/widgets/main_wrapper.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/connection_status.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/splash_cubit.dart';
 import 'package:shopping/features/feature_intro/presentation/screens/intro_main_wrapper.dart';
+import 'package:shopping/locator.dart';
+import 'package:shopping/test_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -101,16 +105,46 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
+  bool _navigated = false;
+
   Future<void> goToHome() async {
+    if (_navigated) return;
+    _navigated = true;
+
     await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
 
-    if (!mounted) return; // the widget is still in the tree, so context is safe
+    final shouldShowIntro = await locator<PrefsOperator>().getIntroState();
+    if (!mounted) return; // check again after every await
 
-    CustomSnackbar.showSnack(context, 'شما وارد شدید', Colors.green);
-    Navigator.pushNamed(
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      IntroMainWrapper.routeName,
-      //  arguments: 'Besinior'
+      shouldShowIntro ? IntroMainWrapper.routeName : MainWrapper.routeName,
+      (route) => false,
     );
   }
+
+  // Future<void> goToHome() async {
+  //   await Future.delayed(const Duration(seconds: 3));
+
+  //   if (!mounted) return; // the widget is still in the tree, so context is safe
+
+  //   PrefsOperator prefsOperator = locator<PrefsOperator>();
+  //   var shouldShowIntro = await prefsOperator.getIntroState();
+  //   if (shouldShowIntro) {
+  //     Navigator.pushNamedAndRemoveUntil(
+  //       context,
+  //       IntroMainWrapper.routeName,
+  //       ModalRoute.withName("intro_main_wrapper"),
+
+  //       //  arguments: 'Besinior'
+  //     );
+  //   } else {
+  //     Navigator.pushNamedAndRemoveUntil(
+  //       context,
+  //       MainWrapper.routeName,
+  //       ModalRoute.withName("main_wrapper"),
+  //     );
+  //   }
+  // }
 }

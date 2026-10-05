@@ -1,11 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shopping/common/blocs/bottom_nav_cubit/bottom_nav_cubit.dart';
+import 'package:shopping/common/widgets/main_wrapper.dart';
 import 'package:shopping/config/my_theme.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/splash_cubit.dart';
 import 'package:shopping/features/feature_intro/presentation/screens/intro_main_wrapper.dart';
 import 'package:shopping/features/feature_intro/presentation/screens/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shopping/locator.dart';
 import 'package:shopping/test_screen.dart';
 
 class AppScrollBehavior extends MaterialScrollBehavior {
@@ -18,10 +21,15 @@ class AppScrollBehavior extends MaterialScrollBehavior {
   };
 }
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initLocator();
   runApp(
     MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => SplashCubit())],
+      providers: [
+        BlocProvider(create: (_) => SplashCubit()),
+        BlocProvider(create: (_) => BottomNavCubit()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -37,7 +45,7 @@ class MyApp extends StatelessWidget {
       theme: MyThemes.lightTheme,
       darkTheme: MyThemes.darkTheme,
       scrollBehavior: AppScrollBehavior(),
-      initialRoute: '/',
+      // initialRoute: '/',
       locale: Locale('fa', ''),
       localizationsDelegates: [
         GlobalWidgetsLocalizations.delegate,
@@ -51,6 +59,7 @@ class MyApp extends StatelessWidget {
       routes: {
         IntroMainWrapper.routeName: (context) => IntroMainWrapper(),
         TestScreen.routeName: (context) => TestScreen(),
+        MainWrapper.routeName: (context) => const MainWrapper(),
       },
       debugShowCheckedModeBanner: false,
       title: 'Besinior Shop',

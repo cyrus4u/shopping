@@ -1,9 +1,12 @@
 import 'package:delayed_widget/delayed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shopping/common/utils/prefs_operator.dart';
+import 'package:shopping/common/widgets/main_wrapper.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/intro_cubit/intro_cubit.dart';
 import 'package:shopping/features/feature_intro/presentation/widgets/get_start_btn.dart';
 import 'package:shopping/features/feature_intro/presentation/widgets/intro_page.dart';
+import 'package:shopping/locator.dart';
 import 'package:shopping/test_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -91,13 +94,15 @@ class IntroMainWrapper extends StatelessWidget {
                       if (state.showGetStart) {
                         return GetStartBtn(
                           text: 'شروع کنید',
-                        
-                          onTap: () {
-                            /// goto home screen
+
+                          onTap: () async {
+                            await locator<PrefsOperator>().changeIntroState();
+                            if (!context.mounted) return;
+
                             Navigator.pushNamedAndRemoveUntil(
                               context,
-                              TestScreen.routeName,
-                              ModalRoute.withName("test_screen"),
+                              MainWrapper.routeName,
+                              (route) => false,
                             );
                           },
                         );
