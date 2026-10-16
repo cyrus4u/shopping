@@ -1,0 +1,30 @@
+import 'package:bloc/bloc.dart';
+import 'package:meta/meta.dart';
+import 'package:shopping/common/resources/data_state.dart';
+import 'package:shopping/features/feature_home/presentation/bloc/cubit/home_data_status.dart';
+import 'package:shopping/features/feature_home/repositories/home_repository.dart';
+
+part 'home_state.dart';
+
+class HomeCubit extends Cubit<HomeState> {
+  HomeRepository homeRepository;
+  HomeCubit(this.homeRepository)
+    : super(HomeState(homeDataStatus: HomeDataLoading()));
+  Future<void> callHomeDataEvent() async {
+    emit(state.copyWith(newHomeDataStatus: HomeDataLoading()));
+
+    DataState dataState = await homeRepository.fetchHomeData();
+    
+    if (dataState is DataSuccess) {
+      /// emit completed
+      emit(
+        state.copyWith(newHomeDataStatus: HomeDataCompleted(dataState.data)),
+      );
+    }
+
+    if (dataState is DataFailed) {
+      /// emit error
+      emit(state.copyWith(newHomeDataStatus: HomeDataError(dataState.error!)));
+    }
+  }
+}

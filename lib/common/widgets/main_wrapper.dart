@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping/common/blocs/bottom_nav_cubit/bottom_nav_cubit.dart';
 import 'package:shopping/common/widgets/bottom_nav.dart';
+import 'package:shopping/features/feature_home/presentation/screens/home_screen.dart';
 
 /// The main shell of the app: a [PageView] with one page per tab,
 /// and a [BottomNav] bar at the bottom.
@@ -31,7 +32,8 @@ class _MainWrapperState extends State<MainWrapper> {
   /// The content of each tab (placeholders for now).
   /// `static const` means the list is created once, not on every instance.
   static const List<Widget> _screens = [
-    ColoredBox(color: Colors.red),
+    HomeScreen(),
+    // ColoredBox(color: Colors.red),
     ColoredBox(color: Colors.black),
     ColoredBox(color: Colors.amber),
     ColoredBox(color: Colors.green),

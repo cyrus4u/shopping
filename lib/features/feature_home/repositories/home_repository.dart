@@ -1,0 +1,23 @@
+import 'package:dio/dio.dart';
+import 'package:shopping/common/resources/data_state.dart';
+import 'package:shopping/features/feature_home/data/data_source/home_api_provider.dart';
+import 'package:shopping/features/feature_home/data/models/home_model.dart';
+
+class HomeRepository {
+  HomeApiProvider apiProvider;
+  HomeRepository(this.apiProvider);
+
+  Future<DataState<HomeModel>> fetchHomeData() async {
+    try {
+      Response response = await apiProvider.callHomeData();
+      if (response.statusCode == 200) {
+        final HomeModel homeModel = HomeModel.fromJson(response.data);
+        return DataSuccess(homeModel);
+      } else {
+        return DataFailed('موفقیت آمیز نبود');
+      }
+    } catch (e) {
+      return DataFailed('سرور مشکل دارد');
+    }
+  }
+}
