@@ -104,10 +104,17 @@ class _MainWrapperState extends State<MainWrapper> {
       child: Scaffold(
         // The bar listens to the Cubit by itself (BlocBuilder inside it).
         bottomNavigationBar: const BottomNav(),
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
-          children: _screens,
+        body: Column(
+          children: [
+            SizedBox(height: 10),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                children: _screens,
+              ),
+            ),
+          ],
         ),
       ),
     );

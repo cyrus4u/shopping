@@ -46,6 +46,8 @@ dependencies:
   flutter_svg: ^2.3.0
   font_awesome_flutter: ^11.0.0
   badges: ^3.2.0
+  cached_network_image: ^3.4.1
+  location: ^10.0.2
   
   
   
