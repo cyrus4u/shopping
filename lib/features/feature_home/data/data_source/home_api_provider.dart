@@ -1,24 +1,17 @@
 import 'dart:developer';
-import 'package:dio/dio.dart';
-import 'package:shopping/common/error_handling/check_exceptions.dart';
-import 'package:shopping/config/constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+
 
 class HomeApiProvider {
-  Dio dio;
-  HomeApiProvider(this.dio);
+  final SupabaseClient _client;
+  HomeApiProvider(this._client);
 
-  dynamic callHomeData(lat, lon) async {
-    final response = await dio
-        .get(
-          "${Constants.baseUrl}/mainData",
-          queryParameters: {"lat": lat, "long": lon},
-        )
-        .onError((DioException error, stackTrace) {
-          return CheckExceptions.response(error.response!);
-        });
-
+  /// lat/lon stay in the signature so the repository and cubit don't change.
+  /// get_home() doesn't use them yet (nearShops is an empty list).
+  Future<Map<String, dynamic>> callHomeData(lat, lon) async {
+    final response = await _client.rpc('get_home');
     log(response.toString());
-
-    return response;
+    return Map<String, dynamic>.from(response as Map);
   }
 }

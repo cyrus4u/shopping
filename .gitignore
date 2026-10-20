@@ -41,6 +41,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+env.json
 
 # Desktop build folders (usually not needed unless you customize native code)
 /windows/
