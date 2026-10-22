@@ -12,6 +12,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shopping/locator.dart';
 import 'package:shopping/test_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shopping/config/app_logger.dart';
+
 
 class AppScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -23,27 +25,23 @@ class AppScrollBehavior extends MaterialScrollBehavior {
   };
 }
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    debugPrint('1. start');
-
     assert(
       SupabaseConfig.url.isNotEmpty && SupabaseConfig.anonKey.isNotEmpty,
       'Run with --dart-define-from-file=env.json',
     );
-    debugPrint('2. config ok');
 
     await Supabase.initialize(
       url: SupabaseConfig.url,
       publishableKey: SupabaseConfig.anonKey,
       postgrestOptions: const PostgrestClientOptions(schema: 'shopping'),
     );
-    debugPrint('3. supabase ok');
 
     await initLocator();
-    debugPrint('4. locator ok');
 
     runApp(
       MultiBlocProvider(
@@ -54,9 +52,8 @@ Future<void> main() async {
         child: const MyApp(),
       ),
     );
-    debugPrint('5. runApp called');
   } catch (e, st) {
-    debugPrint('STARTUP ERROR: $e\n$st');
+    AppLogger.error('Startup failed', error: e, stackTrace: st, name: 'Startup');
     runApp(
       MaterialApp(
         home: Scaffold(

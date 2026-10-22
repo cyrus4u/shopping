@@ -49,6 +49,7 @@ dependencies:
   cached_network_image: ^3.4.1
   location: ^10.0.2
   supabase_flutter: ^2.18.3
+  logger: ^2.8.0
   
   
   

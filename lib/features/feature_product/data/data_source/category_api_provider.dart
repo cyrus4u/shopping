@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:shopping/common/error_handling/check_exceptions.dart';
 import 'package:shopping/config/constants.dart';

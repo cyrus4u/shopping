@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:location/location.dart';
 import 'package:shopping/common/widgets/dot_loading_widget.dart';
+import 'package:shopping/config/app_logger.dart';
 import 'package:shopping/config/responsive.dart';
 import 'package:shopping/features/feature_home/data/models/home_model.dart';
 import 'package:shopping/features/feature_home/presentation/bloc/cubit/home_cubit.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
+  late final HomeCubit _homeCubit;
   var lat = 35.69611;
   var lon = 51.42306;
   LocationData? _userLocation;
@@ -62,18 +64,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    //  getUserLocation();
+    _homeCubit = HomeCubit(locator());
+    _loadHome();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    if (_timer != null) {
-      _timer!.cancel();
+    _timer?.cancel();
+    pageViewController.dispose();
+    _homeCubit.close();
+    super.dispose(); // always last
+  }
+
+  Future<void> _loadHome() async {
+    // The data does not depend on location yet, so start right away.
+    AppLogger.info('Loading home with lat=$lat lon=$lon', name: 'HomeScreen');
+    _homeCubit.callHomeDataEvent(lat, lon);
+
+    // Location can continue in the background.
+    try {
+      await _updateLocation().timeout(const Duration(seconds: 8));
+    } catch (e) {
+      AppLogger.info(
+        'Location unavailable ($e), using default',
+        name: 'HomeScreen',
+      );
     }
+  }
+
+  Future<void> _updateLocation() async {
+    final location = Location();
+
+    var serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) return;
+    }
+
+    var permission = await location.hasPermission();
+    if (permission == PermissionStatus.denied) {
+      permission = await location.requestPermission();
+    }
+    if (permission != PermissionStatus.granted) return;
+
+    final data = await location.getLocation();
+    lat = data.latitude ?? lat;
+    lon = data.longitude ?? lon;
   }
 
   @override
@@ -81,182 +118,174 @@ class _HomeScreenState extends State<HomeScreen> {
     /// get device size
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    return BlocProvider(
-      create: (context) => HomeCubit(locator()),
-      child: Builder(
-        builder: (context) {
-          getUserLocation(context);
-          return BlocBuilder<HomeCubit, HomeState>(
-            buildWhen: (previous, current) {
-              if (previous.homeDataStatus == current.homeDataStatus) {
-                return false;
+    return BlocProvider.value(
+      value: _homeCubit,
+      child: BlocBuilder<HomeCubit, HomeState>(
+        buildWhen: (previous, current) {
+          if (previous.homeDataStatus == current.homeDataStatus) {
+            return false;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          /// loading
+          if (state.homeDataStatus is HomeDataLoading) {
+            return const Center(child: DotLoadingWidget(size: 30));
+          }
+          // completed
+          if (state.homeDataStatus is HomeDataCompleted) {
+            HomeDataCompleted homeDataCompleted =
+                state.homeDataStatus as HomeDataCompleted;
+            HomeModel homeModel = homeDataCompleted.homeModel;
+            _timer ??= Timer.periodic(const Duration(seconds: 3), (
+              Timer timer,
+            ) {
+              if (_currentPage < homeModel.data!.sliders!.length - 1) {
+                _currentPage++;
+              } else {
+                _currentPage = 0;
               }
-              return true;
-            },
-            builder: (context, state) {
-              /// loading
-              if (state.homeDataStatus is HomeDataLoading) {
-                return const Center(child: DotLoadingWidget(size: 30));
-              }
-              // completed
-              if (state.homeDataStatus is HomeDataCompleted) {
-                HomeDataCompleted homeDataCompleted =
-                    state.homeDataStatus as HomeDataCompleted;
-                HomeModel homeModel = homeDataCompleted.homeModel;
-                _timer ??= Timer.periodic(const Duration(seconds: 3), (
-                  Timer timer,
-                ) {
-                  if (_currentPage < homeModel.data!.sliders!.length - 1) {
-                    _currentPage++;
-                  } else {
-                    _currentPage = 0;
-                  }
 
-                  if (pageViewController.positions.isNotEmpty) {
-                    pageViewController.animateToPage(
-                      _currentPage,
-                      duration: const Duration(milliseconds: 350),
-                      curve: Curves.easeIn,
-                    );
-                  }
-                });
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      /// header banner
-                      (homeModel.data!.sliders!.isNotEmpty)
-                          ? SizedBox(
-                              height: Responsive.isMobile(context) ? 180 : 300,
-                              child: PageView.builder(
-                                onPageChanged: (page) {
-                                  // _timer.
-                                },
-                                allowImplicitScrolling: true,
-                                controller: pageViewController,
-                                physics: const BouncingScrollPhysics(),
-                                itemCount: homeModel.data!.sliders!.length,
-                                itemBuilder: (context, index) {
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: CachedNetworkImage(
-                                        imageUrl: homeModel
-                                            .data!
-                                            .sliders![index]
-                                            .img!,
-                                        placeholder: (context, string) {
-                                          return const Center(
-                                            child: DotLoadingWidget(size: 40),
-                                          );
-                                        },
-                                        fit: BoxFit.cover,
-                                        useOldImageOnUrlChange: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          : Container(),
-
-                      /// header banner indicator
-                      (homeModel.data!.sliders!.length > 1)
-                          ? Center(
-                              child: SmoothPageIndicator(
-                                controller:
-                                    pageViewController, // PageController
-                                count: homeModel.data!.sliders!.length,
-                                effect: ExpandingDotsEffect(
-                                  dotWidth: width * 0.02,
-                                  dotHeight: width * 0.02,
-                                  spacing: 5,
-                                  activeDotColor: Colors.redAccent,
-                                ), // your preferred effect
-                              ),
-                            )
-                          : Container(),
-                      const SizedBox(height: 10),
-
-                      /// category 8
-                      SizedBox(
-                        height: 220,
-                        child: GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
-                                crossAxisSpacing: 0.0,
-                                mainAxisSpacing: 8.0,
-                              ),
-                          itemCount: homeModel.data!.categories!.length,
-                          // gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          //   crossAxisCount: 4,
-                          //   crossAxisSpacing: 4.0,
-                          //   mainAxisSpacing: 4.0,
-                          // ),
-                          itemBuilder: (BuildContext context, int index) {
-                            final image =
-                                homeModel.data!.categories![index].img;
-                            final categoryName =
-                                homeModel.data!.categories![index].title;
-
-                            return GestureDetector(
-                              // onTap: (){
-                              //   Navigator.pushNamed(
-                              //     context,
-                              //     AllProductsScreen.routeName,
-                              //     arguments: ProductsArguments(categoryId: homeModel.data!.categories![index].id!),);
-                              // },
-                              child: DeepLinks(
-                                image: image.toString(),
-                                title: categoryName.toString(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: height * 0.01),
-                    ],
-                  ),
+              if (pageViewController.positions.isNotEmpty) {
+                pageViewController.animateToPage(
+                  _currentPage,
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeIn,
                 );
               }
+            });
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  /// header banner
+                  (homeModel.data!.sliders!.isNotEmpty)
+                      ? SizedBox(
+                          height: Responsive.isMobile(context) ? 180 : 300,
+                          child: PageView.builder(
+                            onPageChanged: (page) {
+                              // _timer.
+                            },
+                            allowImplicitScrolling: true,
+                            controller: pageViewController,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: homeModel.data!.sliders!.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        homeModel.data!.sliders![index].img!,
+                                    placeholder: (context, string) {
+                                      return const Center(
+                                        child: DotLoadingWidget(size: 40),
+                                      );
+                                    },
+                                    fit: BoxFit.cover,
+                                    useOldImageOnUrlChange: true,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : Container(),
+                  SizedBox(height: 10),
 
-              /// error
-              if (state.homeDataStatus is HomeDataError) {
-                final HomeDataError homeDataError =
-                    state.homeDataStatus as HomeDataError;
+                  /// header banner indicator
+                  (homeModel.data!.sliders!.length > 1)
+                      ? Center(
+                          child: SmoothPageIndicator(
+                            controller: pageViewController, // PageController
+                            count: homeModel.data!.sliders!.length,
+                            effect: ExpandingDotsEffect(
+                              dotWidth: width * 0.02,
+                              dotHeight: width * 0.02,
+                              spacing: 5,
+                              activeDotColor: Colors.redAccent,
+                            ), // your preferred effect
+                          ),
+                        )
+                      : Container(),
+                  const SizedBox(height: 10),
 
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        homeDataError.errorMessage,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber.shade800,
-                        ),
-                        onPressed: () {
-                          /// call all data again
-                          BlocProvider.of<HomeCubit>(
-                            context,
-                          ).callHomeDataEvent(lat, lon);
-                        },
-                        child: const Text("تلاش دوباره"),
-                      ),
-                    ],
+                  /// category 8
+                  SizedBox(
+                    height: 220,
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 0.0,
+                            mainAxisSpacing: 8.0,
+                          ),
+                      itemCount: homeModel.data!.categories!.length,
+                      // gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      //   crossAxisCount: 4,
+                      //   crossAxisSpacing: 4.0,
+                      //   mainAxisSpacing: 4.0,
+                      // ),
+                      itemBuilder: (BuildContext context, int index) {
+                        final image = homeModel.data!.categories![index].img;
+                        final categoryName =
+                            homeModel.data!.categories![index].title;
+
+                        return GestureDetector(
+                          // onTap: (){
+                          //   Navigator.pushNamed(
+                          //     context,
+                          //     AllProductsScreen.routeName,
+                          //     arguments: ProductsArguments(categoryId: homeModel.data!.categories![index].id!),);
+                          // },
+                          child: DeepLinks(
+                            image: image.toString(),
+                            title: categoryName.toString(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                );
-              }
-              return Container();
-            },
-          );
+                  SizedBox(height: height * 0.01),
+                ],
+              ),
+            );
+          }
+
+          /// error
+          if (state.homeDataStatus is HomeDataError) {
+            final HomeDataError homeDataError =
+                state.homeDataStatus as HomeDataError;
+
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    homeDataError.errorMessage,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade800,
+                    ),
+                    onPressed: () {
+                      /// call all data again
+                      BlocProvider.of<HomeCubit>(
+                        context,
+                      ).callHomeDataEvent(lat, lon);
+                    },
+                    child: const Text("تلاش دوباره"),
+                  ),
+                ],
+              ),
+            );
+          }
+          return Container();
         },
       ),
     );
