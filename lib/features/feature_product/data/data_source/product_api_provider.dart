@@ -1,38 +1,46 @@
-
-import 'package:dio/dio.dart';
-
-import '../../../../common/error_handling/check_exceptions.dart';
-import '../../../../common/params/products_params.dart';
-import '../../../../config/constants.dart';
+import 'package:shopping/common/params/products_params.dart';
+import 'package:shopping/config/app_logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductsApiProvider {
-  Dio dio;
-  ProductsApiProvider(this.dio);
+  static const _tag = 'ProductsApi';
 
-  dynamic callAllProducts(ProductsParams productsParams) async {
-    try{
+  final SupabaseClient _client;
+  ProductsApiProvider(this._client);
 
-      print(productsParams.categories);
-
-      final response = await dio.post(
-        "${Constants.baseUrl}/products",
-        data: {
-          "start": productsParams.start,
-          "step": productsParams.step,
-          "categories": productsParams.categories,
-          "maxPrice": productsParams.maxPrice,
-          "minPrice": productsParams.minPrice,
-          "sortby": productsParams.sortBy,
-          'search': productsParams.search
+  Future<Map<String, dynamic>> callAllProducts(
+    ProductsParams productsParams,
+  ) async {
+    try {
+      final response = await _client.rpc(
+        'get_products',
+        params: {
+          'p_start': productsParams.start,
+          'p_step': productsParams.step,
+          'p_category': productsParams.categories,
+          'p_min_price': productsParams.minPrice,
+          'p_max_price': productsParams.maxPrice,
+          'p_sort_by': productsParams.sortBy,
+          'p_search': productsParams.search,
         },
       );
-
-      print(response);
-      return response;
-    } on DioError catch(e) {
-      print(e.toString());
-      return CheckExceptions.response(e.response!);
+      return Map<String, dynamic>.from(response as Map);
+    } on PostgrestException catch (e, st) {
+      AppLogger.error(
+        'get_products failed: ${e.message}',
+        error: e,
+        stackTrace: st,
+        name: _tag,
+      );
+      rethrow;
+    } catch (e, st) {
+      AppLogger.error(
+        'Unexpected error in get_products',
+        error: e,
+        stackTrace: st,
+        name: _tag,
+      );
+      rethrow;
     }
-
   }
 }

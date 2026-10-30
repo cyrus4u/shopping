@@ -51,6 +51,7 @@ dependencies:
   supabase_flutter: ^2.18.3
   logger: ^2.8.0
   persian_number_utility: ^1.1.6
+  flutter_typeahead: ^6.0.0
   
   
   

@@ -4,6 +4,9 @@ import 'package:shopping/common/blocs/bottom_nav_cubit/bottom_nav_cubit.dart';
 import 'package:shopping/common/widgets/bottom_nav.dart';
 import 'package:shopping/features/feature_home/presentation/screens/home_screen.dart';
 import 'package:shopping/features/feature_product/presentation/screens/category_screen.dart';
+import 'package:shopping/features/feature_product/presentation/widgets/search_textfield.dart';
+import 'package:shopping/features/feature_product/repositories/all_products_repository.dart';
+import 'package:shopping/locator.dart';
 
 /// The main shell of the app: a [PageView] with one page per tab,
 /// and a [BottomNav] bar at the bottom.
@@ -24,6 +27,7 @@ class _MainWrapperState extends State<MainWrapper> {
   /// Controls the PageView. It must be created once and disposed manually,
   /// which is why this widget is a StatefulWidget.
   late final PageController _pageController;
+  final TextEditingController searchController = TextEditingController();
 
   /// Page we are animating towards after a tab tap (null = not animating).
   /// While it is not null, [_onPageChanged] ignores the in-between pages
@@ -104,17 +108,45 @@ class _MainWrapperState extends State<MainWrapper> {
       child: Scaffold(
         // The bar listens to the Cubit by itself (BlocBuilder inside it).
         bottomNavigationBar: const BottomNav(),
-        body: Column(
-          children: [
-            SizedBox(height: 10),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                children: _screens,
+        body: SafeArea(
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+
+              /// search Box
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 2,
+                      color: Colors.grey.shade400,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10.0,
+                    right: 10,
+                    bottom: 10,
+                  ),
+                  child: SearchTextField(
+                    controller: searchController,
+                    allProductsRepository: locator<AllProductsRepository>(),
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  children: _screens,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

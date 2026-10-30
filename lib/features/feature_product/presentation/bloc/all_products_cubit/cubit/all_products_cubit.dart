@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:shopping/common/params/products_params.dart';
 import 'package:shopping/common/resources/data_state.dart';
+import 'package:shopping/config/app_logger.dart';
 import 'package:shopping/features/feature_product/data/models/all_products_model.dart';
 import 'package:shopping/features/feature_product/repositories/all_products_repository.dart';
 
@@ -21,37 +22,53 @@ class AllProductsCubit extends Cubit<AllProductsState> {
 
 
   Future<void> loadProductsData(ProductsParams productsParams) async {
-    /// emit loading
-    /// if it is first time emit main loading
-    /// if it is paging time emit paging loading
-    if(state.nextStart == 0){
-      emit(state.copyWith(newProductsDataStatus: ProductsDataLoading()));
-    }else{
-      emit(state.copyWith(newIsLoadingPaging: true));
-    }
+  // Ignore extra scroll events while a page is already loading.
+  if (state.isLoadingPaging) return;
 
-    /// change next start before api call
-    productsParams.start = state.nextStart;
-    DataState dataState = await allProductsRepository.fetchAllProductsData(productsParams);
+  if (state.nextStart == 0) {
+    emit(state.copyWith(newProductsDataStatus: ProductsDataLoading()));
+  } else {
+    emit(state.copyWith(newIsLoadingPaging: true));
+  }
 
-    if(dataState is DataSuccess){
-      AllProductsModel allProductsModel = dataState.data;
+  productsParams.start = state.nextStart;
 
-      /// emit completed
+  try {
+    final DataState<AllProductsModel> dataState =
+        await allProductsRepository.fetchAllProductsData(productsParams);
+
+    if (isClosed) return;
+
+    if (dataState is DataSuccess<AllProductsModel>) {
+      final model = dataState.data!;
+      final page = model.data?.firstOrNull;
+      final newProducts = page?.products ?? const <Products>[];
+
       emit(state.copyWith(
-        newProductsDataStatus: ProductsDataCompleted(allProductsModel),
-        newAllProducts: state.allProducts..addAll(allProductsModel.data![0].products!),
-        newNextStart: allProductsModel.data![0].nextStart,
+        newProductsDataStatus: ProductsDataCompleted(model),
+        newAllProducts: [...state.allProducts, ...newProducts], // new list
+        newNextStart: page?.nextStart ?? state.nextStart,
+        newIsLoadingPaging: false,
+      ));
+    } else if (dataState is DataFailed<AllProductsModel>) {
+      emit(state.copyWith(
+        newProductsDataStatus: ProductsDataError(dataState.error!),
         newIsLoadingPaging: false,
       ));
     }
-
-    if(dataState is DataFailed){
-      /// emit error
+  } catch (e, st) {
+    AppLogger.error(
+      'loadProductsData failed',
+      error: e,
+      stackTrace: st,
+      name: 'AllProductsCubit',
+    );
+    if (!isClosed) {
       emit(state.copyWith(
-          newProductsDataStatus: ProductsDataError(dataState.error!),
-          newIsLoadingPaging: false
+        newProductsDataStatus: ProductsDataError('Something went wrong.'),
+        newIsLoadingPaging: false,
       ));
     }
   }
+}
 }

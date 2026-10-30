@@ -5,6 +5,8 @@ import 'package:shopping/common/utils/prefs_operator.dart';
 import 'package:shopping/features/feature_home/data/data_source/home_api_provider.dart';
 import 'package:shopping/features/feature_home/repositories/home_repository.dart';
 import 'package:shopping/features/feature_product/data/data_source/category_api_provider.dart';
+import 'package:shopping/features/feature_product/data/data_source/product_api_provider.dart';
+import 'package:shopping/features/feature_product/repositories/all_products_repository.dart';
 import 'package:shopping/features/feature_product/repositories/category_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,8 +26,16 @@ Future<void> initLocator() async {
   locator.registerSingleton<CategoryApiProvider>(
     CategoryApiProvider(locator()),
   );
+  locator.registerSingleton<ProductsApiProvider>(
+    ProductsApiProvider(locator()),
+  );
+  
 
   /// repository
   locator.registerSingleton<HomeRepository>(HomeRepository(locator()));
   locator.registerSingleton<CategoryRepository>(CategoryRepository(locator()));
+  locator.registerSingleton<AllProductsRepository>(
+    AllProductsRepository(locator()),
+  );
+  
 }
