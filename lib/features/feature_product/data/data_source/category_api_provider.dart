@@ -1,19 +1,33 @@
-import 'dart:developer';
-import 'package:dio/dio.dart';
-import 'package:shopping/common/error_handling/check_exceptions.dart';
-import 'package:shopping/config/constants.dart';
+import 'package:shopping/config/app_logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CategoryApiProvider {
-  Dio dio;
-  CategoryApiProvider(this.dio);
+  static const _tag = 'CategoryApi';
 
-  dynamic callCategories() async {
+  final SupabaseClient _client;
+  CategoryApiProvider(this._client);
+
+  Future<Map<String, dynamic>> callCategories() async {
     try {
-      final response = await dio.get('${Constants.baseUrl}/categories/tree');
-      log(response.toString());
-      return response;
-    } on DioException catch (e) {
-      return CheckExceptions.response(e.response!);
+      final response = await _client.rpc('get_categories_tree');
+      AppLogger.info('get_categories_tree loaded', name: _tag);
+      return Map<String, dynamic>.from(response as Map);
+    } on PostgrestException catch (e, st) {
+      AppLogger.error(
+        'get_categories_tree failed: ${e.message}',
+        error: e,
+        stackTrace: st,
+        name: _tag,
+      );
+      rethrow;
+    } catch (e, st) {
+      AppLogger.error(
+        'Unexpected error in get_categories_tree',
+        error: e,
+        stackTrace: st,
+        name: _tag,
+      );
+      rethrow;
     }
   }
 }

@@ -28,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   late final HomeCubit _homeCubit;
-  var lat = 35.69611;
-  var lon = 51.42306;
+  var _lat = 35.69611;
+  var _lon = 51.42306;
   LocationData? _userLocation;
 
   Future<void> getUserLocation(BuildContext context) async {
@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
-        BlocProvider.of<HomeCubit>(context).callHomeDataEvent(lat, lon);
+        _homeCubit.callHomeDataEvent(_lat, _lon);
         return;
       }
     }
@@ -51,15 +51,15 @@ class _HomeScreenState extends State<HomeScreen> {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
         /// call api with default lat lon
-        BlocProvider.of<HomeCubit>(context).callHomeDataEvent(lat, lon);
+        _homeCubit.callHomeDataEvent(_lat, _lon);
         return;
       }
     }
 
-    final _locationData = await location.getLocation();
-    lat = _locationData.latitude!;
-    lon = _locationData.longitude!;
-    BlocProvider.of<HomeCubit>(context).callHomeDataEvent(lat, lon);
+    final locationData = await location.getLocation();
+    _lat = locationData.latitude;
+    _lon = locationData.longitude;
+    _homeCubit.callHomeDataEvent(_lat, _lon);
   }
 
   @override
@@ -79,8 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadHome() async {
     // The data does not depend on location yet, so start right away.
-    AppLogger.info('Loading home with lat=$lat lon=$lon', name: 'HomeScreen');
-    _homeCubit.callHomeDataEvent(lat, lon);
+    AppLogger.info('Loading home with lat=$_lat lon=$_lon', name: 'HomeScreen');
+    _homeCubit.callHomeDataEvent(_lat, _lon);
 
     // Location can continue in the background.
     try {
@@ -109,8 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (permission != PermissionStatus.granted) return;
 
     final data = await location.getLocation();
-    lat = data.latitude ?? lat;
-    lon = data.longitude ?? lon;
+    _lat = data.latitude;
+    _lon = data.longitude;
   }
 
   @override
@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   /// category 8
                   SizedBox(
-                    height: 220,
+                    height: 240,
                     child: GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
@@ -277,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       /// call all data again
                       BlocProvider.of<HomeCubit>(
                         context,
-                      ).callHomeDataEvent(lat, lon);
+                      ).callHomeDataEvent(_lat, _lon);
                     },
                     child: const Text("تلاش دوباره"),
                   ),

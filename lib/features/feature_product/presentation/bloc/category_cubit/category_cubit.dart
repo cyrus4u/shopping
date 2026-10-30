@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:shopping/features/feature_product/presentation/bloc/cubit/category_data_status.dart';
+import 'package:shopping/features/feature_product/presentation/bloc/category_cubit/category_data_status.dart';
 import '../../../../../common/resources/data_state.dart';
 import '../../../repositories/category_repository.dart';
 

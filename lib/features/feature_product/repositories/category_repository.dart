@@ -1,21 +1,27 @@
-import 'package:dio/dio.dart';
-import 'package:shopping/common/error_handling/app_exception.dart';
-import 'package:shopping/common/error_handling/check_exceptions.dart';
 import 'package:shopping/common/resources/data_state.dart';
+import 'package:shopping/config/app_logger.dart';
 import 'package:shopping/features/feature_product/data/data_source/category_api_provider.dart';
 import 'package:shopping/features/feature_product/data/models/categories_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CategoryRepository {
-  CategoryApiProvider apiProvider;
+  final CategoryApiProvider apiProvider;
   CategoryRepository(this.apiProvider);
-  
+
   Future<DataState<CategoriesModel>> fetchCategoryData() async {
-    try{
-      Response response = await apiProvider.callCategories();
-      final CategoriesModel categoriesModel = CategoriesModel.fromJson(response.data);
-      return DataSuccess(categoriesModel);
-    } on AppException catch(e){
-      return await CheckExceptions.getError(e);
+    try {
+      final json = await apiProvider.callCategories();
+      return DataSuccess(CategoriesModel.fromJson(json));
+    } on PostgrestException catch (e) {
+      return DataFailed('Server error: ${e.message}');
+    } catch (e, st) {
+      AppLogger.error(
+        'fetchCategoryData failed',
+        error: e,
+        stackTrace: st,
+        name: 'CategoryRepository',
+      );
+      return DataFailed('Something went wrong. Please try again.');
     }
   }
 }
