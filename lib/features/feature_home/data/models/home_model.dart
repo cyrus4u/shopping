@@ -115,6 +115,7 @@ class Data {
 
 class SuggestionProducts {
   SuggestionProducts({
+    this.key, 
     this.title,
     this.location,
     this.items,
@@ -124,6 +125,7 @@ class SuggestionProducts {
   });
 
   SuggestionProducts.fromJson(dynamic json) {
+    key = json['key'];
     title = json['title'];
     location = json['location'];
     if (json['items'] != null) {
@@ -136,6 +138,7 @@ class SuggestionProducts {
     updatedAt = json['updated_at'];
     image = json['image'];
   }
+   String? key; 
   String? title;
   String? location;
   List<Items>? items;
