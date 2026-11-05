@@ -2,6 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shopping/common/utils/prefs_operator.dart';
+import 'package:shopping/features/feature_auth/data/data_source/auth_api_provider.dart';
+import 'package:shopping/features/feature_auth/presentation/bloc/login_bloc/bloc/login_bloc.dart';
+import 'package:shopping/features/feature_auth/presentation/bloc/signup_bloc/bloc/signup_bloc.dart';
+import 'package:shopping/features/feature_auth/repositories/auth_repository.dart';
 import 'package:shopping/features/feature_home/data/data_source/home_api_provider.dart';
 import 'package:shopping/features/feature_home/repositories/home_repository.dart';
 import 'package:shopping/features/feature_product/data/data_source/category_api_provider.dart';
@@ -29,6 +33,7 @@ Future<void> initLocator() async {
   locator.registerSingleton<ProductsApiProvider>(
     ProductsApiProvider(locator()),
   );
+  locator.registerSingleton<AuthApiProvider>(AuthApiProvider(locator()));
   
 
   /// repository
@@ -37,5 +42,10 @@ Future<void> initLocator() async {
   locator.registerSingleton<AllProductsRepository>(
     AllProductsRepository(locator()),
   );
+  locator.registerSingleton<AuthRepository>(AuthRepository(locator<AuthApiProvider>()));
+
+  /// bloc
+  locator.registerSingleton<SignupBloc>(SignupBloc(locator<AuthRepository>()));
+  locator.registerSingleton<LoginBloc>(LoginBloc(locator<AuthRepository>()));
   
 }

@@ -1,6 +1,12 @@
+// common/params/signup_params.dart
 class SignUpParams {
-  String? username;
-  String? phoneNumber;
+  final String name;
+  final String email;
+  final String password;
 
-  SignUpParams(this.username, this.phoneNumber);
+  const SignUpParams({
+    required this.name,
+    required this.email,
+    required this.password,
+  });
 }

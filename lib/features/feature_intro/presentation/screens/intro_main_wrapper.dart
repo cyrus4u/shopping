@@ -2,7 +2,7 @@ import 'package:delayed_widget/delayed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping/common/utils/prefs_operator.dart';
-import 'package:shopping/common/widgets/main_wrapper.dart';
+import 'package:shopping/common/utils/start_route.dart';
 import 'package:shopping/features/feature_intro/presentation/bloc/intro_cubit/intro_cubit.dart';
 import 'package:shopping/features/feature_intro/presentation/widgets/get_start_btn.dart';
 import 'package:shopping/features/feature_intro/presentation/widgets/intro_page.dart';
@@ -136,7 +136,7 @@ class IntroMainWrapper extends StatelessWidget {
                             // so the user can't go back to the intro.
                             Navigator.pushNamedAndRemoveUntil(
                               context,
-                              MainWrapper.routeName,
+                              routeAfterIntro(), // was: MainWrapper.routeName
                               (route) => false,
                             );
                           },

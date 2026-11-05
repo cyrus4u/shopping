@@ -10,6 +10,7 @@ import 'package:shopping/features/feature_intro/presentation/bloc/splash_cubit/s
 import 'package:shopping/features/feature_intro/presentation/screens/intro_main_wrapper.dart';
 import 'package:shopping/locator.dart';
 import 'package:shopping/test_screen.dart';
+import 'package:shopping/common/utils/start_route.dart'; // add
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -115,36 +116,12 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final shouldShowIntro = await locator<PrefsOperator>().getIntroState();
-    if (!mounted) return; // check again after every await
+    if (!mounted) return;
 
     Navigator.pushNamedAndRemoveUntil(
       context,
-      shouldShowIntro ? IntroMainWrapper.routeName : MainWrapper.routeName,
+      shouldShowIntro ? IntroMainWrapper.routeName : routeAfterIntro(),
       (route) => false,
     );
   }
-
-  // Future<void> goToHome() async {
-  //   await Future.delayed(const Duration(seconds: 3));
-
-  //   if (!mounted) return; // the widget is still in the tree, so context is safe
-
-  //   PrefsOperator prefsOperator = locator<PrefsOperator>();
-  //   var shouldShowIntro = await prefsOperator.getIntroState();
-  //   if (shouldShowIntro) {
-  //     Navigator.pushNamedAndRemoveUntil(
-  //       context,
-  //       IntroMainWrapper.routeName,
-  //       ModalRoute.withName("intro_main_wrapper"),
-
-  //       //  arguments: 'Besinior'
-  //     );
-  //   } else {
-  //     Navigator.pushNamedAndRemoveUntil(
-  //       context,
-  //       MainWrapper.routeName,
-  //       ModalRoute.withName("main_wrapper"),
-  //     );
-  //   }
-  // }
 }

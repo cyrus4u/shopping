@@ -7,6 +7,17 @@
       "type": "dart",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define-from-file=env.json"]
-    }
+    },
+    {
+  "name": "shopping (web-server, port 3000)",
+  "request": "launch",
+  "type": "dart",
+  "program": "lib/main.dart",
+  "deviceId": "web-server",
+  "toolArgs": [
+    "--web-port=3000",
+    "--dart-define-from-file=env.json"
+  ]
+}
   ]
 }
