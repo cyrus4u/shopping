@@ -3,7 +3,10 @@ import 'package:shopping/common/params/login_params.dart';
 import 'package:shopping/common/params/signup_params.dart';
 import 'package:shopping/config/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shopping/config/auth_config.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shopping/config/auth_config.dart';
 
 class AuthApiProvider {
   static const _tag = 'AuthApi';
@@ -104,10 +107,49 @@ class AuthApiProvider {
     }
   }
 
-  Future<bool> callSignInWithGoogle() {
-    return _client.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: kIsWeb ? Uri.base.origin : null,
-    );
+  static Future<void>? _googleInit;
+
+  Future<void> _ensureGoogleInit() => _googleInit ??= GoogleSignIn.instance
+      .initialize(serverClientId: AuthConfig.googleWebClientId);
+
+  Future<bool> callSignInWithGoogle() async {
+    // Web: browser redirect, as before.
+    if (kIsWeb) {
+      return _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: AuthConfig.googleRedirect,
+      );
+    }
+
+    // Android / iOS: native account sheet.
+    try {
+      await _ensureGoogleInit();
+      final account = await GoogleSignIn.instance.authenticate();
+
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        throw const AuthException('No ID token received from Google');
+      }
+
+      // Supabase's docs list the access token as required for Google sign-in.
+      final scopes = ['email', 'profile'];
+      final authz =
+          await account.authorizationClient.authorizationForScopes(scopes) ??
+          await account.authorizationClient.authorizeScopes(scopes);
+
+      await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: authz.accessToken,
+      );
+      AppLogger.info('native google sign-in done', name: _tag);
+      return true;
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return true; // the user closed the sheet, so it's not an error
+      }
+      AppLogger.error('google sign-in failed: ${e.code}', error: e, name: _tag);
+      rethrow;
+    }
   }
 }

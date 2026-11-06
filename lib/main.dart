@@ -40,22 +40,26 @@ Future<void> main() async {
       'Run with --dart-define-from-file=env.json',
     );
 
+    print('1 before Supabase.initialize');
     await Supabase.initialize(
       url: SupabaseConfig.url,
       publishableKey: SupabaseConfig.anonKey,
       postgrestOptions: const PostgrestClientOptions(schema: 'shopping'),
     );
+    print('2 after Supabase.initialize');
 
     await initLocator();
+    print('3 after initLocator');
 
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedOut) {
         navigatorKey.currentState?.pushNamedAndRemoveUntil(
-          EmailAuthScreen.routeName,  
+          EmailAuthScreen.routeName,
           (route) => false,
         );
       }
     });
+    print('4 before runApp');
 
     runApp(
       MultiBlocProvider(
@@ -99,7 +103,7 @@ class MyApp extends StatelessWidget {
       theme: MyThemes.lightTheme,
       darkTheme: MyThemes.darkTheme,
       scrollBehavior: AppScrollBehavior(),
-      // initialRoute: '/',
+      initialRoute: '/',
       locale: Locale('fa', ''),
       localizationsDelegates: [
         GlobalWidgetsLocalizations.delegate,
@@ -114,7 +118,7 @@ class MyApp extends StatelessWidget {
         IntroMainWrapper.routeName: (context) => IntroMainWrapper(),
         TestScreen.routeName: (context) => TestScreen(),
         MainWrapper.routeName: (context) => const MainWrapper(),
-        
+
         AllProductsScreen.routeName: (context) => AllProductsScreen(),
         EmailAuthScreen.routeName: (context) => const EmailAuthScreen(),
       },

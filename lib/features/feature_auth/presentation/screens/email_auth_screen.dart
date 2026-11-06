@@ -10,6 +10,8 @@ import 'package:shopping/features/feature_auth/presentation/bloc/login_bloc/bloc
 import 'package:shopping/features/feature_auth/presentation/widgets/auth_widgets.dart';
 import 'package:shopping/features/feature_auth/presentation/widgets/custom_clippath_signup.dart';
 import 'package:shopping/locator.dart';
+import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailAuthScreen extends StatefulWidget {
   static const routeName = '/email_auth_screen';
@@ -20,19 +22,38 @@ class EmailAuthScreen extends StatefulWidget {
 }
 
 class _EmailAuthScreenState extends State<EmailAuthScreen> {
+  StreamSubscription<AuthState>? _authSub;
+  bool _navigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn && !_navigated && mounted) {
+        _navigated = true;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          MainWrapper.routeName,
+          (route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _emailController.dispose();
+    _codeController.dispose();
+    super.dispose();
+  }
+
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
 
   /// false = step 1 (enter email), true = step 2 (enter code)
   bool _codeSent = false;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _codeController.dispose();
-    super.dispose();
-  }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
@@ -100,6 +121,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                     showAuthSnack(context, status.errorMessage, Colors.red);
                   }
                   if (status is CodeCheckCompleted) {
+                    _navigated = true;  
                     final user = status.user;
                     showAuthSnack(
                       context,

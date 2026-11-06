@@ -53,6 +53,7 @@ dependencies:
   persian_number_utility: ^1.1.6
   flutter_typeahead: ^6.0.0
   flutter_rating_bar: ^4.0.1
+  google_sign_in: ^7.2.0
  
   
   
