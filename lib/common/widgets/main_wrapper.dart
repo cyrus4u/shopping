@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping/common/blocs/bottom_nav_cubit/bottom_nav_cubit.dart';
 import 'package:shopping/common/widgets/bottom_nav.dart';
-import 'package:shopping/features/feature_auth/presentation/screens/profile_screen.dart';
+import 'package:shopping/features/feature_home/presentation/screens/profile_screen.dart';
 import 'package:shopping/features/feature_home/presentation/screens/home_screen.dart';
 import 'package:shopping/features/feature_product/presentation/screens/category_screen.dart';
 import 'package:shopping/features/feature_product/presentation/widgets/search_textfield.dart';

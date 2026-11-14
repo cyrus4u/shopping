@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping/common/arguments/products_arguments.dart';
@@ -14,21 +13,29 @@ class AllProductsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     /// get categoryId
-    final arg = ModalRoute.of(context)!.settings.arguments as ProductsArguments;
+    final arg =
+        ModalRoute.of(context)?.settings.arguments as ProductsArguments?;
+    if (arg == null) {
+      return const Scaffold(
+        body: Center(child: Text('محصولی انتخاب نشده است')),
+      );
+    }
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) =>  AllProductsCubit(locator())),
+        BlocProvider(create: (_) => AllProductsCubit(locator())),
         // BlocProvider(create: (_) =>  FilterCubit()),
       ],
       child: Scaffold(
+        appBar: const MainAppbar(title: 'محصولات'),
 
-          appBar: const MainAppbar(title: 'محصولات',),
-
-          body: ProductsGrid(categoryId: arg.categoryId, searchText: arg.searchTxt, sellerId: arg.sellerId,),
+        body: ProductsGrid(
+          categoryId: arg.categoryId,
+          searchText: arg.searchTxt,
+          sellerId: arg.sellerId,
         ),
+      ),
     );
   }
 }
